@@ -104,7 +104,11 @@ public abstract class Ethernet extends Thread {
         jScrollPane1.setViewportView(RecibirEther);
 
         getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 160, 220, 70));
+
+        Ip_Servidor.setText("192.168.43.15");
         getContentPane().add(Ip_Servidor, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 30, 150, -1));
+
+        PuertoS.setText("4000");
         getContentPane().add(PuertoS, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 30, 100, -1));
         getContentPane().add(Comando, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 70, 70, -1));
 

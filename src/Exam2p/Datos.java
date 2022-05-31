@@ -34,66 +34,76 @@ public class Datos extends javax.swing.JFrame {
     /**
      * Creates new form GUI_COMUNICADOR
      */
-      DefaultTableModel datos = new DefaultTableModel();
-    
-    
+    DefaultTableModel datos = new DefaultTableModel();
+
     Com puertors232;
     Parameters config;
     String cad_recibe = "";
     String dat;
-  InputStream aux;
+    InputStream aux;
     DataInputStream flujo;
     DataOutputStream flujoset;
     String recibirEther = "";
-    boolean estado_red=false;
-    static int PUERTO;       
+    boolean estado_red = false;
+    static int PUERTO;
     String recibir = "";
-    
+
     ServerSocket Servidor;
     Socket Cliente;
     OutputStream set;
-    
+
     public Datos() {
         initComponents();
-         model();
+        model();
     }
-            
-    public void model() {       
-        String[] cabecera ={"ID","Nombre", "Correo","Estado"};
+
+    public void model() {
+        String[] cabecera = {"ID", "Nombre", "Correo", "Estado"};
         datos.setColumnIdentifiers(cabecera);
         tabla.setModel(datos);
     }
-    public void Limpiar(){
+
+    public void Limpiar() {
         int filas = datos.getRowCount();
-        
-        for(int i = 0; i < filas; i++){
+
+        for (int i = 0; i < filas; i++) {
             datos.removeRow(0);
             Datos_Recibidos_Ethernet.setText("");
         }
     }
-    
- public abstract class Recibir_Ethernet extends Thread {  
+
+    public abstract class Recibir_Ethernet extends Thread {
+
         @Override
-        public void run (){
-           
+        public void run() {
+
             try {
-                Servidor = new ServerSocket(PUERTO);          
-                while(true){
-                    Cliente=Servidor.accept();         
-                    flujo = new DataInputStream(Cliente.getInputStream());   
-                    recibirEther = flujo.readUTF();         
-                    Datos_Recibidos_Ethernet.append("Dato CLIENTE: "+recibirEther+"\n");     
-                    if(recibirEther.equals("0")){
-                        recibir="Apagado";
+                Servidor = new ServerSocket(PUERTO);
+                while (true) {
+                    Cliente = Servidor.accept();
+                    flujo = new DataInputStream(Cliente.getInputStream());
+                    recibirEther = flujo.readUTF();
+                    //Datos_Recibidos_Ethernet.append("Dato CLIENTE: "+recibirEther+"\n");     
+                    if (recibirEther.equals("0")) {
+                        Datos_Recibidos_Ethernet.append("Dato CLIENTE:" + recibirEther + " Led 1 Apagado\n");
+                        recibir = "Apagado";
                     }
-                   if(recibirEther.equals("1")){
-                        recibir="Encendido";
+                    if (recibirEther.equals("1")) {
+                        Datos_Recibidos_Ethernet.append("Dato CLIENTE: Led 1 Encendido\n");
+                        recibir = "Encendido";
                     }
-                    
-    
-                    
+                    if (recibirEther.equals("2")) {
+                        Datos_Recibidos_Ethernet.append("Dato CLIENTE: Led 2 Encendido\n");
+                        recibir = "Encendido";
+                    }
+                    if (recibirEther.equals("3")) {
+                        Datos_Recibidos_Ethernet.append("Dato CLIENTE: Led 2 Apagado\n");
+                        recibir = "Apagado";
+                    }
+
                     puertors232.sendString(recibirEther);
-                    datos.addRow(new Object[]{" ",recibir});     
+                    datos.addRow(new Object[]{" ", txtName.getText(), txtEmail.getText(), recibir});
+                    Guardar();
                 }
             } catch (IOException ex) {
                 Logger.getLogger(Datos.class.getName()).log(Level.SEVERE, null, ex);
@@ -102,9 +112,10 @@ public class Datos extends javax.swing.JFrame {
             }
         }
     }
-     
-     Conectar Bsed = new Conectar();
+
+    Conectar Bsed = new Conectar();
     Connection Base = Bsed.conectar();
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -149,6 +160,8 @@ public class Datos extends javax.swing.JFrame {
 
         jLabel4.setText("Puerto Ethernet");
         getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 30, -1, -1));
+
+        txtID.setText("4000");
         getContentPane().add(txtID, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 50, 130, 30));
 
         btnConfiguracion.setText("Configuracion");
@@ -183,7 +196,7 @@ public class Datos extends javax.swing.JFrame {
         });
         getContentPane().add(btnConsultar, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 140, 110, 30));
 
-        COMPUERTAS.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "COM1", "COM2", "COM3", "COM4" }));
+        COMPUERTAS.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "COM1", "COM2", "COM3", "COM4", "COM5", "COM6" }));
         COMPUERTAS.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 COMPUERTASActionPerformed(evt);
@@ -217,7 +230,11 @@ public class Datos extends javax.swing.JFrame {
 
         jLabel7.setText("Nombre");
         getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 10, -1, -1));
+
+        txtEmail.setText("Correo@correo.com");
         getContentPane().add(txtEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 50, 110, -1));
+
+        txtName.setText("Miguel");
         getContentPane().add(txtName, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 10, 110, -1));
 
         pack();
@@ -227,12 +244,11 @@ public class Datos extends javax.swing.JFrame {
         try {
             // TODO add your handling code here:
             config = new Parameters();
-            config.setPort(COMPUERTAS.getSelectedItem().toString());     
+            config.setPort(COMPUERTAS.getSelectedItem().toString());
             config.setBaudRate(Baud._9600);
             config.setMinDelayWrite(10);
-            puertors232 = new Com (config);
-            JOptionPane.showMessageDialog(null,"Puerto"+COMPUERTAS+": disponible");
-            
+            puertors232 = new Com(config);
+            JOptionPane.showMessageDialog(null, "Puerto" + COMPUERTAS + ": disponible");
 
         } catch (Exception ex) {
             Logger.getLogger(Datos.class.getName()).log(Level.SEVERE, null, ex);
@@ -243,18 +259,19 @@ public class Datos extends javax.swing.JFrame {
 
         PUERTO = Integer.parseInt(txtID.getText());
         JOptionPane.showMessageDialog(null, "Conectado");
-        Recibir_Ethernet red = new Recibir_Ethernet (){};
+        Recibir_Ethernet red = new Recibir_Ethernet() {
+        };
         red.start();
-        
+
     }//GEN-LAST:event_btnActivarActionPerformed
 
     private void btnGrabarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrabarActionPerformed
-      try {
+        try {
             PreparedStatement PS = Base.prepareStatement("INSERT INTO personas(ID,Nombre, Correo, Estado) VALUES (?,?,?,?)");
-            PS.setString(1,null);
-            PS.setString(2,txtName.getText());
-            PS.setString(3,txtEmail.getText());
-            PS.setString(4,recibir);         
+            PS.setString(1, null);
+            PS.setString(2, txtName.getText());
+            PS.setString(3, txtEmail.getText());
+            PS.setString(4, recibir);
             PS.executeUpdate();
             Consultar();
         } catch (SQLException ex) {
@@ -262,35 +279,49 @@ public class Datos extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnGrabarActionPerformed
 
+    public void Guardar() {
+        try {
+            PreparedStatement PS = Base.prepareStatement("INSERT INTO personas(ID,Nombre, Correo, Estado) VALUES (?,?,?,?)");
+            PS.setString(1, null);
+            PS.setString(2, txtName.getText());
+            PS.setString(3, txtEmail.getText());
+            PS.setString(4, recibir);
+            PS.executeUpdate();
+            Consultar();
+        } catch (SQLException ex) {
+            Logger.getLogger(Datos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     private void btnConsultarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultarActionPerformed
         Consultar();
     }//GEN-LAST:event_btnConsultarActionPerformed
-    
-    public void Consultar(){
+
+    public void Consultar() {
         Limpiar();
         String[] datosBD = new String[4];
         String SQL = "SELECT * FROM personas";
         try {
             Statement Ba = Base.createStatement();
             ResultSet consulta = Ba.executeQuery(SQL);
-            while(consulta.next()){
-                datosBD[0]=consulta.getString(1);
-                datosBD[1]=consulta.getString(2);
-                datosBD[2]=consulta.getString(3);
-                datosBD[3]=consulta.getString(4);
+            while (consulta.next()) {
+                datosBD[0] = consulta.getString(1);
+                datosBD[1] = consulta.getString(2);
+                datosBD[2] = consulta.getString(3);
+                datosBD[3] = consulta.getString(4);
                 datos.addRow(datosBD);
             }
         } catch (SQLException ex) {
             Logger.getLogger(Datos.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }    
-    
+    }
+
     private void btnBorrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBorrarActionPerformed
         // TODO add your handling code here:
-        String borrar = "DELETE FROM personas WHERE Id="+Campo_borrar.getText();
+        String borrar = "DELETE FROM personas WHERE Id=" + Campo_borrar.getText();
 
         try {
-            Statement  Borrar = Base.createStatement();
+            Statement Borrar = Base.createStatement();
             Borrar.execute(borrar);
             Consultar();
         } catch (SQLException ex) {
